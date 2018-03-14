@@ -25,21 +25,12 @@
     # {{ db_instance_type | string }}
     # {{ db_allocated_storage_size | integer }}
 
-    # {{ db_skip_final_snapshot | string }}
-
     # {{ ecc_node_type | string }}
     # {{ ecc_num_cache_nodes | string }}
 
     # {{ route53_domain_name | string }}
 
     # {{ terraform_arg | string }}"
-
-  vars:
-    db_engine_version: 5.6.37
-
-    ecc_engine: "redis"
-    ecc_port: 6379
-    ecc_parameter_group_name: "default.redis3.2"
 
   tasks:
 
@@ -69,22 +60,25 @@
         ecs_block_device_size: "{{ ecs_block_device_size }}"
         ecs_ssh_public_key: "{{ ssh_public_key }}"
 
+        ecc_engine: "redis"
+        ecc_port: 6379
+        ecc_parameter_group_name: "default.redis3.2"
         ecc_node_type: "{{ ecc_node_type }}"
         ecc_num_cache_nodes: "{{ ecc_num_cache_nodes }}"
 
         cloudflare_email: "{{ cloudflare_email }}"
         cloudflare_access_token: "{{ cloudflare_access_token }}"
+
         docker_hub_username: "{{ docker_hub_username }}"
         docker_hub_password: "{{ docker_hub_password }}"
 
-        db_instance_type: "{{ db_instance_type }}"
         db_engine: "postgresql"
-        db_engine_version: "{{ db_engine_version }}"
-        db_allocated_storage_size: "{{ db_allocated_storage_size }}"
+        db_instance_type: "{{ db_instance_type }}"
+        db_engine_version: 5.6.37
+        db_allocated_storage_size: "10"
         db_name: "{{ rds_db }}"
         db_username: "{{ rds_user }}"
         db_password: "{{ rds_pass }}"
-        db_skip_final_snapshot: "{{ db_skip_final_snapshot }}"
 
         route53_domain_name: "{{ route53_domain_name }}"
         terraform_arg: "{{ terraform_arg }}"
