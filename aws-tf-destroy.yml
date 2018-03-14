@@ -1,0 +1,20 @@
+- name: destroy terraform on aws
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    terraform_data_dir: "/opt/terraform/data"
+
+  tasks:
+    - name: A plan will be generated to destroy all resources
+      command: "terraform plan -destroy -no-color {{ terraform_arg }}"
+      args:
+        chdir: "{{ terraform_data_dir }}/{{ project_name }}/{{ project_deployment_environment }}"
+      tags: configuration
+
+    #destroy all resources
+    - name: Destroy the logserver installation on AWS
+      command: "terraform destroy -force -no-color {{ terraform_arg }}"
+      args:
+        chdir: "{{ terraform_data_dir }}/{{ project_name }}/{{ project_deployment_environment }}"
+      tags: destroy
