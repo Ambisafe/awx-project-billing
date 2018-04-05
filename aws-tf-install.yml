@@ -56,6 +56,9 @@
         ecs_instance_type: "{{ ecs_instance_type }}"
         ecs_block_device_size: "{{ ecs_block_device_size }}"
         ecs_ssh_public_key: "{{ ssh_public_key }}"
+        ecs_sg_cidr_blocks:
+        - "185.41.248.158/32"
+        - "13.229.188.86/32"
 
         ecc_engine: "redis"
         ecc_port: 6379
@@ -68,6 +71,7 @@
 
         docker_hub_username: "{{ docker_hub_username }}"
         docker_hub_password: "{{ docker_hub_password }}"
+
 
         project_zone_rds_cluster: "true"
         db_engine: "aurora-postgresql"
