@@ -2,59 +2,67 @@
   hosts: localhost
   gather_facts: false
 
-  # variables passed from AWX job survey:
+  # variables passed from AWX:
 
-    # {{ project_deployment_environment | string }}
-    # {{ project_zone_cloudflare | string }}
-    # {{ project_zone_main | string }}
-    # {{ project_ecc | string }}
+  # credentials:
+  #
+  # {{ github_access_token }}
+  # {{ ssh_public_key }}
+  # {{ cloudflare_email }}
+  # {{ cloudflare_access_token }}
+  # {{ rds_db }}
+  # {{ rds_user }}
+  # {{ rds_pass }}
+  # {{ docker_hub_username }}
+  # {{ docker_hub_password }}
+  #
+  # inventory:
+  #
+  # {{ organization_name }}
+  #
+  # extra_vars:
+  #
+  # {{ project_name }}
+  # {{ project_type }}
+  # {{ project_env_name }}
+  #
+  # surveys:
+  #
+  # {{ project_env_zone }}
+  # {{ terraform_arg }}
 
-    # {{ aws_region_name | string }}
-    # {{ aws_vpc_default | string }}
-    # {{ aws_vpc_id | string }}
-    # {{ aws_subnet_id_a | string }}
-    # {{ aws_subnet_id_b | string }}
-    # {{ aws_subnet_id_c | string }}
+  vars:
 
-    # {{ ecs_max_size | integer }}
-    # {{ ecs_instance_type | string }}
-    # {{ ecs_block_device_size | integer }}
+    # ACM for CloudFront is available for N.Virginia only
+    aws_region: us-east-1
 
-    # {{ db_instance_type | string }}
+  environment:
 
-    # {{ ecc_node_type | string }}
-    # {{ ecc_num_cache_nodes | string }}
-
-    # {{ route53_domain_name | string }}
-
-    # {{ terraform_arg | string }}"
+    TF_LOG: "DEBUG"
+    TF_LOG_PATH: "/tmp/terraform.log"
 
   tasks:
-
-    - name: set AWS region name
-      set_fact:
-        aws_region: "{{ (lookup('file', 'aws_region_names.json') | from_json).get( aws_region_name | regex_replace('[().]','') | regex_replace('[\ ]','_') ) }}"
 
     - include_role:
         name: terraform-aws
       vars:
-        project_name: "billing"
-        project_deployment_environment: "{{ project_deployment_environment }}"
-        project_zone_main: "{{ project_zone_main }}"
-        project_zone_cloudflare: "{{ project_zone_cloudflare }}"
-        project_ecc: "{{ project_ecc }}"
+        project_type: "{{ project_type }}"
+        project_name: "{{ project_name }}"
+        project_deployment_environment: "{{ project_env_name }}"
+        project_zone_cloudflare: false
+        project_cloudfront_for_alb: true
+        project_ecs: true
+        project_ecc: true
+        project_alb: true
+        project_rds: true
+        project_iam: true
+        project_zone_rds_cluster: true
 
-        aws_vpc_default: "{{  aws_vpc_default }}"
-        aws_vpc_id: "{{ aws_vpc_id }}"
-        aws_subnet_id_a: "{{ aws_subnet_id_a }}"
-        aws_subnet_id_b: "{{ aws_subnet_id_b }}"
-        aws_subnet_id_c: "{{ aws_subnet_id_c }}"
-
-        ecs_min_size: "0"
-        ecs_max_size: "{{ ecs_max_size }}"
-        ecs_desired_capacity: "{{ ecs_max_size }}"
-        ecs_instance_type: "{{ ecs_instance_type }}"
-        ecs_block_device_size: "{{ ecs_block_device_size }}"
+        ecs_min_size: 0
+        ecs_max_size: 1
+        ecs_desired_capacity: 1
+        ecs_instance_type: "t2.large"
+        ecs_block_device_size: 32
         ecs_ssh_public_key: "{{ ssh_public_key }}"
         ecs_sg_ingress:
         - from_port: 22
@@ -70,12 +78,11 @@
           cidr_blocks:
             - "0.0.0.0/0"
 
-
         ecc_engine: "redis"
         ecc_port: 6379
         ecc_parameter_group_name: "default.redis3.2"
-        ecc_node_type: "{{ ecc_node_type }}"
-        ecc_num_cache_nodes: "{{ ecc_num_cache_nodes }}"
+        ecc_node_type: "cache.t2.small"
+        ecc_num_cache_nodes: 3
 
         cloudflare_email: "{{ cloudflare_email }}"
         cloudflare_access_token: "{{ cloudflare_access_token }}"
@@ -83,17 +90,16 @@
         docker_hub_username: "{{ docker_hub_username }}"
         docker_hub_password: "{{ docker_hub_password }}"
 
-
-        project_zone_rds_cluster: "true"
         db_engine: "aurora-postgresql"
-        db_instance_type: "{{ db_instance_type }}"
+        db_instance_type: "db.r4.large"
         db_engine_version: 9.6.3
-        db_allocated_storage_size: "10"
+        db_allocated_storage_size: 10
         db_name: "{{ rds_db }}"
         db_username: "{{ rds_user }}"
         db_password: "{{ rds_pass }}"
 
-        route53_domain_name: "{{ route53_domain_name }}"
-        terraform_arg: "{{ terraform_arg }}"
+        project_env_zone: "{{ project_env_zone }}"
+        skip_env_domain_prefix: true
 
+        terraform_arg: "{{ terraform_arg }}"
 
